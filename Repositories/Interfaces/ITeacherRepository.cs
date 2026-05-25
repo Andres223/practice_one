@@ -1,0 +1,9 @@
+using WebApplication1.Common;
+using WebApplication1.Dtos.TeacherDtos;
+
+namespace WebApplication1.Repositories.Interfaces;
+
+public interface ITeacherRepository
+{
+    Task<Result<List<TeacherDto>>> GetAllAsync();
+}
