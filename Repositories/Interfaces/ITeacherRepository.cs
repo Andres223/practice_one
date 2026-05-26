@@ -6,4 +6,6 @@ namespace WebApplication1.Repositories.Interfaces;
 public interface ITeacherRepository
 {
     Task<Result<List<TeacherDto>>> GetAllAsync();
+    Task<Result<TeacherDto>> GetByIdAsync(Guid id);
+    Task<Result<TeacherDto>> CreateAsync(TeacherRequest request);
 }

@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+
 namespace WebApplication1.Extension;
 
 public static class HealthCheckExtensions
@@ -27,7 +29,23 @@ public static class HealthCheckExtensions
         this IEndpointRouteBuilder endpoints
     )
     {
-        endpoints.MapHealthChecks("/health");
+        endpoints.MapHealthChecks("/health", new HealthCheckOptions
+        {
+            ResponseWriter = async (context, report) =>
+            {
+                context.Response.ContentType = "application/json";
+                var entry = report.Entries.FirstOrDefault();
+                
+                var response = new
+                {
+                    status = report.Status.ToString(),
+                    name = entry.Key
+                };
+                
+                await context.Response.WriteAsJsonAsync(response);
+            }
+        }
+        );
         return endpoints;
     }
 }
