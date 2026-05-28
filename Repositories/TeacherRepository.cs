@@ -31,7 +31,7 @@ public class TeacherRepository(AppDbContext context) : ITeacherRepository
             return Result<TeacherDto>.Failure(new ApiError
             {
                 Message = $"No se encuentra un profesor con el id '{id}'",
-                Code = "NOT_FOUND"
+                Code = "404"
             }
             );
         }
@@ -48,5 +48,39 @@ public class TeacherRepository(AppDbContext context) : ITeacherRepository
         
         var createdDto = teacher.Adapt<TeacherDto>();
         return Result<TeacherDto>.Success(createdDto);
+    }
+
+    public async Task<Result<TeacherDto>> UpdateAsync(Guid id, TeacherRequest request)
+    {
+        var teacher = await context.Teachers.FirstOrDefaultAsync(t => t.Id.Equals(id));
+        if (teacher is null)
+        {
+            return Result<TeacherDto>.Failure(new ApiError
+            {
+                Message = $"No se encuentra un profesor con el id '{id}'",
+                Code = "404"
+            });
+        }
+        
+        teacher.Name = request.Name;
+        await context.SaveChangesAsync();
+        var teacherDto = teacher.Adapt<TeacherDto>();
+        return Result<TeacherDto>.Success(teacherDto);
+    }
+
+    public async Task<Result<bool>> DeleteAsync(Guid id)
+    {
+        var teacher = await context.Teachers.FirstOrDefaultAsync(t => t.Id.Equals(id));
+        if (teacher is null)
+        {
+            return Result<bool>.Failure(new ApiError
+            {
+               Message = $"No existe un profesor con el id '{id}'",
+               Code = "404"
+            });
+        }
+        context.Teachers.Remove(teacher);
+        await context.SaveChangesAsync();
+        return Result<bool>.Success(true);
     }
 }

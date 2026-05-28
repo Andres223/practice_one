@@ -33,13 +33,9 @@ public class TeacherController : ControllerBase
         var result = await _teacherRepository.GetByIdAsync(id);
         if (result.IsFailure)
         {
-            if (result.Error?.Code == "NOT_FOUND")
-            {
-                return NotFound(ApiResponse<TeacherDto>
-                .FromResult(result));
-            }
-            return BadRequest(ApiResponse<TeacherDto>
-                .FromResult(result));
+            return result.Error?.Code == "404"
+                ? NotFound(ApiResponse<TeacherDto>.FromResult(result))
+                : BadRequest(ApiResponse<TeacherDto>.FromResult(result));
         }
         
         return Ok(ApiResponse<TeacherDto>.FromResult(result));
@@ -62,5 +58,39 @@ public class TeacherController : ControllerBase
             new { id = result.Value.Id },
             ApiResponse<TeacherDto>.FromResult(result)
         );
+    }
+    
+    [HttpPut("{id:guid}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ApiResponse<TeacherDto>>> Update(Guid id, TeacherRequest request)
+    {
+        var result = await _teacherRepository.UpdateAsync(id, request);
+        if (result.IsFailure)
+        {
+            return result.Error?.Code == "404"
+                ? NotFound(ApiResponse<TeacherDto>.FromResult(result))
+                : BadRequest(ApiResponse<TeacherDto>.FromResult(result));
+        }
+        
+        return Ok(ApiResponse<TeacherDto>.FromResult(result));
+    }
+    
+    [HttpDelete("{id:guid}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ApiResponse<bool>>> Delete(Guid id)
+    {
+        var result = await _teacherRepository.DeleteAsync(id);
+        if (result.IsFailure)
+        {
+            return result.Error?.Code == "404"
+                ? NotFound(ApiResponse<bool>.FromResult(result))
+                : BadRequest(ApiResponse<bool>.FromResult(result));
+        }
+        
+        return NoContent();
     }
 }
